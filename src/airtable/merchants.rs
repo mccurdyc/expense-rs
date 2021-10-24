@@ -14,9 +14,9 @@ pub struct Merchant {
 
 #[derive(Debug, Deserialize)]
 pub struct MerchantDetails {
-    pub id: String,
+    pub id: Option<String>,
     #[serde(rename(deserialize = "Purchases"))]
-    pub purchases: Vec<String>,
+    pub purchases: Option<Vec<String>>,
     #[serde(rename(deserialize = "Name"))]
     pub name: String,
 }

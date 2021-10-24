@@ -9,14 +9,14 @@ pub struct Tags {
 
 #[derive(Debug, Deserialize)]
 pub struct Tag {
-    pub id: String,
+    pub id: Option<String>,
     pub fields: TagDetails,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct TagDetails {
     #[serde(rename(deserialize = "Purchases"))]
-    pub purchases: Vec<String>,
+    pub purchases: Option<Vec<String>>,
     #[serde(rename(deserialize = "Name"))]
     pub name: String,
 }
