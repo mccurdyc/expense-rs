@@ -29,14 +29,10 @@ impl<'a> Airtable<'a> {
     pub async fn get_purchases(&self) -> Result<Purchases> {
         let res = self
             .client
-            .get(format!(
-                "https://api.airtable.com/v0/{}/Purchases",
-                self.table_id
-            ))
+            .get(self.get_url("Purchases"))
             .bearer_auth(self.api_token)
             .send()
             .await?;
-        // This doesn't feel like Rust This feels like Go.
         let purchases: Purchases = res.json().await?;
         Ok(purchases)
     }
