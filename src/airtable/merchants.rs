@@ -9,6 +9,7 @@ pub struct Merchants {
 
 #[derive(Debug, Deserialize)]
 pub struct Merchant {
+    pub id: Option<String>,
     pub fields: MerchantDetails,
 }
 
