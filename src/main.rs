@@ -7,10 +7,6 @@ mod nocodb;
 use crate::airtable::Airtable;
 use crate::nocodb::NocoDB;
 
-// TODO:
-// - rate limit / paginate Airtable requests.
-// - implement nocodb module
-
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let at_api_token = env::var("AIRTABLE_API_TOKEN").expect("AIRTABLE_API_TOKEN env not set");
@@ -37,9 +33,6 @@ async fn main() -> Result<(), Error> {
         };
         db.add_tag(tag).await?;
     }
-
-    // TODO - merchants
-    // TODO - purchases - will have to query Airtable to get merchant and tag names from IDs
 
     Ok(())
 }

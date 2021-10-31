@@ -32,6 +32,6 @@ via [NocoDB]()).
 - [ ] [gitcrypt]() to encrypt backup of expense SQLite DB.
 - [ ] rate limit and paginate through Airtable results.
 - [ ] implement loading merchants.
-- [ ] implement loading purchases.
+- [ ] implement loading purchases - will have to query Airtable to get merchant and tag names from IDs.
 - [ ] familiarize myself with testing in Rust.
 - [ ] familiarize myself with documenation in Rust.
