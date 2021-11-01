@@ -9,8 +9,8 @@ pay for wouldn't buy me much room to grow.
 I've been reading a lot about Rust and
 have been trying to find a good first project and figured this would be good.
 Also, this year, I've been interested in self-hosting things (e.g., pictures via
-[Perkeep](), notes via [Obsidian](), compute via an Intel NUC, and now my purchases
-via [NocoDB]()).
+[Perkeep](https://perkeep.org/), notes via [Obsidian](https://obsidian.md/),
+compute via an Intel NUC, and now my purchases via [NocoDB](https://www.nocodb.com)).
 
 ## Usage
 
@@ -29,9 +29,11 @@ via [NocoDB]()).
 
 ## TODOs
 
-- [ ] [gitcrypt]() to encrypt backup of expense SQLite DB.
+- [ ] [git-crypt](https://github.com/AGWA/git-crypt) to encrypt backup of
+  expense SQLite DB.
 - [ ] rate limit and paginate through Airtable results.
 - [ ] implement loading merchants.
-- [ ] implement loading purchases - will have to query Airtable to get merchant and tag names from IDs.
+- [ ] implement loading purchases - will have to query Airtable to get merchant
+  and tag names from IDs.
 - [ ] familiarize myself with testing in Rust.
 - [ ] familiarize myself with documenation in Rust.
