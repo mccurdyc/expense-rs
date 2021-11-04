@@ -1,0 +1,4 @@
+- modules don't implicitly include other files in the filesystem.
+- json (de)serialization is specified via an annotation.
+- https://stackoverflow.com/a/68795912
+- Use `Option<...>` for fields that may not exist when JSON (de)serialization.

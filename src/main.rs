@@ -34,5 +34,23 @@ async fn main() -> Result<(), Error> {
         db.add_tag(tag).await?;
     }
 
+    let merchants = table
+        .get_merchants()
+        .await
+        .expect("failed to retrieve merchants");
+    let mut recs = merchants
+        .into_iter()
+        .filter(|m| m.id.is_some() && m.fields.name.is_some() && m.fields.purchases.is_some())
+        .collect::<Vec<airtable::merchants::Merchant>>()
+        .into_iter();
+
+    for rec in &mut recs {
+        // TODO - this is a redundant check since we filter above.
+        if let Some(name) = rec.fields.name {
+            let merchant = nocodb::merchants::Merchant { name: &name };
+            db.add_merchant(merchant).await?;
+        }
+    }
+
     Ok(())
 }

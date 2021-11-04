@@ -1,12 +1,21 @@
-use crate::nocodb::NocoDB;
-use anyhow::{anyhow, Result};
-use serde::Deserialize;
+use anyhow::Result;
+use serde::Serialize;
 
-#[derive(Debug, Deserialize)]
-pub struct Merchant {}
+use crate::nocodb::NocoDB;
+
+#[derive(Debug, Serialize)]
+pub struct Merchant<'a> {
+    pub name: &'a str,
+}
 
 impl<'a> NocoDB<'a> {
-    pub async fn post_merchant(&self) -> Result<()> {
-        Err(anyhow!("TODO - not implemented"))
+    pub async fn add_merchant(&self, m: Merchant<'a>) -> Result<()> {
+        self.client
+            .post(self.get_url("merchants"))
+            .header("xc-auth", self.api_token)
+            .json(&m)
+            .send()
+            .await?;
+        Ok(())
     }
 }
