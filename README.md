@@ -29,6 +29,8 @@ compute via an Intel NUC, and now my purchases via [NocoDB](https://www.nocodb.c
 
 ## TODOs
 
+- [ ] is there a way to have multiple tags per purchase like Airtable (e.g.,
+  food on a vacation)?
 - [ ] [git-crypt](https://github.com/AGWA/git-crypt) to encrypt backup of
   expense SQLite DB.
 - [ ] rate limit and paginate through Airtable results.

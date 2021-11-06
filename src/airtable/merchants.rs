@@ -24,6 +24,17 @@ pub struct MerchantDetails {
 }
 
 impl<'a> Airtable<'a> {
+    pub async fn get_merchant(&self, id: &str) -> Result<Merchant> {
+        let res = self
+            .client
+            .get(self.get_url(&format!("Merchants/{}", id)))
+            .bearer_auth(self.api_token)
+            .send()
+            .await?;
+        let merchant = res.json().await?;
+        Ok(merchant)
+    }
+
     pub async fn get_merchants(&self) -> Result<Vec<Merchant>> {
         let mut result: Vec<Merchant> = vec![];
         let mut offset: Option<String> = None;

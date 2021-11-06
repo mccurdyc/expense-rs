@@ -23,13 +23,14 @@ async fn main() -> Result<(), Error> {
     let mut recs = tags
         .records
         .into_iter()
-        .filter(|t| t.id.is_some() && t.fields.purchases.is_some())
+        .filter(|t| t.id.is_some() && t.fields.name.is_some() && t.fields.purchases.is_some())
         .collect::<Vec<airtable::tags::Tag>>()
         .into_iter();
 
     for rec in &mut recs {
         let tag = nocodb::tags::Tag {
-            name: &rec.fields.name,
+            id: None,
+            name: rec.fields.name.unwrap(),
         };
         db.add_tag(tag).await?;
     }
@@ -45,11 +46,44 @@ async fn main() -> Result<(), Error> {
         .into_iter();
 
     for rec in &mut recs {
-        // TODO - this is a redundant check since we filter above.
-        if let Some(name) = rec.fields.name {
-            let merchant = nocodb::merchants::Merchant { name: &name };
-            db.add_merchant(merchant).await?;
-        }
+        let merchant = nocodb::merchants::Merchant {
+            id: None,
+            name: rec.fields.name.unwrap(),
+        };
+        db.add_merchant(merchant).await?;
+    }
+
+    let purchases = table
+        .get_purchases()
+        .await
+        .expect("failed to retrieve purchases");
+
+    for rec in &mut purchases.into_iter() {
+        // TODO - fix to support multiple tags
+        let tag_name = table
+            .get_tag(&rec.fields.tags.unwrap()[0])
+            .await?
+            .fields
+            .name
+            .unwrap();
+        let merchant_name = table
+            .get_merchant(&rec.fields.merchant.unwrap()[0])
+            .await?
+            .fields
+            .name
+            .unwrap();
+
+        if let Some(tag_id) = db.get_tag(&tag_name).await?.id {
+            if let Some(merchant_id) = db.get_merchant(&merchant_name).await?.id {
+                let purchase = nocodb::purchases::Purchase {
+                    amount: rec.fields.amount.unwrap_or_default(),
+                    date: rec.fields.datestr.unwrap_or_default(),
+                    tag_id,
+                    merchant_id,
+                };
+                db.add_purchase(purchase).await?;
+            };
+        };
     }
 
     Ok(())
