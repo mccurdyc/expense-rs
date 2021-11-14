@@ -45,3 +45,11 @@ impl<'a> Airtable<'a> {
         Ok(tags)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn get_tag() {
+        // TODO - mock client.
+    }
+}

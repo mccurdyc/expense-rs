@@ -14,7 +14,7 @@ impl<'a> NocoDB<'a> {
         let res = self
             .client
             .get(self.get_url("merchants/findOne"))
-            .query(&[("where", format!("(name,eq,{}", name))])
+            .query(&[("where", format!("(name,eq,{})", name))])
             .header("xc-auth", self.api_token)
             .send()
             .await?;

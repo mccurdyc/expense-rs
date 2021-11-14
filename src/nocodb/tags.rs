@@ -7,7 +7,7 @@ use crate::nocodb::NocoDB;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Tag {
     pub id: Option<i64>,
-    pub name: String,
+    pub name: Option<String>,
 }
 
 impl<'a> NocoDB<'a> {
@@ -15,7 +15,7 @@ impl<'a> NocoDB<'a> {
         let res = self
             .client
             .get(self.get_url("tags/findOne"))
-            .query(&[("where", format!("(name,eq,{}", name))])
+            .query(&[("where", format!("(name,eq,{})", name))])
             .header("xc-auth", self.api_token)
             .send()
             .await?;

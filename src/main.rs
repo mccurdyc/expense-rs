@@ -30,7 +30,7 @@ async fn main() -> Result<(), Error> {
     for rec in &mut recs {
         let tag = nocodb::tags::Tag {
             id: None,
-            name: rec.fields.name.unwrap(),
+            name: Some(rec.fields.name.unwrap()),
         };
         db.add_tag(tag).await?;
     }
@@ -59,31 +59,40 @@ async fn main() -> Result<(), Error> {
         .expect("failed to retrieve purchases");
 
     for rec in &mut purchases.into_iter() {
-        // TODO - fix to support multiple tags
-        let tag_name = table
-            .get_tag(&rec.fields.tags.unwrap()[0])
-            .await?
-            .fields
-            .name
-            .unwrap();
-        let merchant_name = table
-            .get_merchant(&rec.fields.merchant.unwrap()[0])
-            .await?
-            .fields
-            .name
-            .unwrap();
+        let fields = &rec.fields;
 
-        if let Some(tag_id) = db.get_tag(&tag_name).await?.id {
-            if let Some(merchant_id) = db.get_merchant(&merchant_name).await?.id {
-                let purchase = nocodb::purchases::Purchase {
-                    amount: rec.fields.amount.unwrap_or_default(),
-                    date: rec.fields.datestr.unwrap_or_default(),
-                    tag_id,
-                    merchant_id,
-                };
-                db.add_purchase(purchase).await?;
+        let tags = fields.tags.unwrap();
+        // TODO - is the Vec necessary here?
+        let merchant = fields.merchant.unwrap()[0];
+
+        for tag in &mut tags.into_iter() {
+            /* TODO
+             * - add tags
+             * - add merchant
+             * - add purchase
+             * - associate tags
+             * - associate merchant
+             */
+
+            // TODO - don't unwrap, use some better matching e.g., `continue`.
+            let tag_name = table.get_tag(tag).await?.fields.name.unwrap();
+            let tag_id = db.get_tag(&tag_name).await?.id.unwrap();
+            // TODO - don't unwrap, use some better matching e.g., `continue`.
+            let merchant_name = table.get_merchant(merchant).await?.fields.name.unwrap();
+            let merchant_id = db.get_merchant(&merchant_name).await?.id.unwrap();
+
+            let purchase = nocodb::purchases::Purchase {
+                id: None,
+                amount: fields.amount,
+                date: fields.datestr,
+                tags: None,
+                merchants: None,
             };
-        };
+            // TODO - avoid unwrap
+            let resp = db.add_purchase(purchase).await?;
+            db.associate_tag(resp.id.unwrap(), tag_id).await?;
+            db.associate_merchant(resp.id.unwrap(), merchant_id).await?;
+        }
     }
 
     Ok(())
