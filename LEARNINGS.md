@@ -34,4 +34,18 @@ TODOs
   - is it `if let Some(foo)`? Or some use of `map`?
   - https://stackoverflow.com/questions/64996954/how-can-i-pull-data-out-of-an-option-for-independent-use
   - `unwrap()` and `expect()` take ownership of `self`.
-  -AH!!! I bet I need to use a constructor function that takes ownership!
+  - AH!!! I bet I need to use a constructor function that takes ownership!
+
+  ```
+  error[E0507]: cannot move out of `fields.tags` which is behind a shared reference
+  --> src/main.rs:64:20
+   |
+64 |         let tags = fields.tags.unwrap();
+   |                    ^^^^^^^^^^^ move occurs because `fields.tags` has type `std::option::Option<std::vec
+::Vec<std::string::String>>`, which does not implement the `Copy` trait
+   |
+help: consider borrowing the `Option`'s content
+   |
+64 |         let tags = fields.tags.as_ref().unwrap();
+   |                               +++++++++
+   ```

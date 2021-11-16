@@ -61,11 +61,10 @@ async fn main() -> Result<(), Error> {
     for rec in &mut purchases.into_iter() {
         let fields = &rec.fields;
 
-        let tags = fields.tags.unwrap();
-        // TODO - is the Vec necessary here?
-        let merchant = fields.merchant.unwrap()[0];
+        let tags = fields.tags.as_ref().unwrap();
+        let merchant = fields.merchant.as_ref().unwrap();
 
-        for tag in &mut tags.into_iter() {
+        for tag in &mut tags.iter() {
             /* TODO
              * - add tags
              * - add merchant
@@ -78,13 +77,13 @@ async fn main() -> Result<(), Error> {
             let tag_name = table.get_tag(tag).await?.fields.name.unwrap();
             let tag_id = db.get_tag(&tag_name).await?.id.unwrap();
             // TODO - don't unwrap, use some better matching e.g., `continue`.
-            let merchant_name = table.get_merchant(merchant).await?.fields.name.unwrap();
+            let merchant_name = table.get_merchant(&merchant[0]).await?.fields.name.unwrap();
             let merchant_id = db.get_merchant(&merchant_name).await?.id.unwrap();
 
             let purchase = nocodb::purchases::Purchase {
                 id: None,
                 amount: fields.amount,
-                date: fields.datestr,
+                date: fields.datestr.clone(),
                 tags: None,
                 merchants: None,
             };
