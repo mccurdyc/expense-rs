@@ -1,5 +1,5 @@
 use anyhow::Error;
-use std::env;
+use std::{env, process::exit};
 
 mod airtable;
 mod nocodb;
@@ -60,37 +60,35 @@ async fn main() -> Result<(), Error> {
 
     for rec in &mut purchases.into_iter() {
         let fields = &rec.fields;
-
         let tags = fields.tags.as_ref().unwrap();
         let merchant = fields.merchant.as_ref().unwrap();
 
-        for tag in &mut tags.iter() {
-            /* TODO
-             * - add tags
-             * - add merchant
-             * - add purchase
-             * - associate tags
-             * - associate merchant
-             */
+        let purchase = nocodb::purchases::Purchase {
+            id: None,
+            amount: fields.amount,
+            date: fields.datestr.clone(),
+        };
+        let resp = db.add_purchase(purchase).await?;
 
-            // TODO - don't unwrap, use some better matching e.g., `continue`.
-            let tag_name = table.get_tag(tag).await?.fields.name.unwrap();
-            let tag_id = db.get_tag(&tag_name).await?.id.unwrap();
-            // TODO - don't unwrap, use some better matching e.g., `continue`.
+        if let Some(purchase_id) = resp.id {
             let merchant_name = table.get_merchant(&merchant[0]).await?.fields.name.unwrap();
             let merchant_id = db.get_merchant(&merchant_name).await?.id.unwrap();
+            if let Err(e) = db.associate_merchant(purchase_id, merchant_id).await {
+                eprintln!("associate_merchant error: {:?}", e);
+                exit(1);
+            }
 
-            let purchase = nocodb::purchases::Purchase {
-                id: None,
-                amount: fields.amount,
-                date: fields.datestr.clone(),
-                tags: None,
-                merchants: None,
-            };
-            // TODO - avoid unwrap
-            let resp = db.add_purchase(purchase).await?;
-            db.associate_tag(resp.id.unwrap(), tag_id).await?;
-            db.associate_merchant(resp.id.unwrap(), merchant_id).await?;
+            for tag in &mut tags.iter() {
+                let tag_name = table.get_tag(tag).await?.fields.name.unwrap();
+                let tag_id = db.get_tag(&tag_name).await?.id.unwrap();
+                if let Err(e) = db.associate_tag(purchase_id, tag_id).await {
+                    eprintln!("associate_tag error: {:?}", e);
+                    exit(1);
+                }
+            }
+        } else {
+            eprintln!("failed with response: {:?}", resp);
+            exit(1);
         }
     }
 
