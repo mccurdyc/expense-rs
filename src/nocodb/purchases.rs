@@ -33,18 +33,15 @@ struct PurchaseAssociation {
 
 impl<'a> NocoDB<'a> {
     pub async fn add_purchase(&self, p: Purchase) -> Result<Purchase> {
-        let req = self
+        let resp = self
             .client
             .post(self.get_url("purchases"))
             .header("xc-auth", self.api_token)
-            .json(&p);
-
-        println!(
-            "purchase resp: {:?}, purchase: {:?}",
-            req.try_clone().unwrap().send().await?.text().await?,
-            p
-        );
-        let resp = req.send().await?.json::<Purchase>().await?;
+            .json(&p)
+            .send()
+            .await?
+            .json::<Purchase>()
+            .await?;
         Ok(resp)
     }
 
@@ -54,16 +51,15 @@ impl<'a> NocoDB<'a> {
             tag_id: Some(tag_id),
             merchant_id: None,
         };
-        println!("body: {:?}", serde_json::to_string(&body)?);
-        let resp = self
-            .client
+        println!("associate_tag body: {:?}", serde_json::to_string(&body)?);
+        self.client
             .post(self.get_url("m2mpurchases_tags"))
             .header("xc-auth", self.api_token)
             .json(&body)
             .send()
             .await?;
         // TODO: handle status 400
-        println!("associate_tag resp: {:?}", resp);
+        // println!("associate_tag resp: {:?}", resp);
         Ok(())
     }
 
@@ -73,16 +69,18 @@ impl<'a> NocoDB<'a> {
             merchant_id: Some(merchant_id),
             tag_id: None,
         };
-        println!("body: {:?}", serde_json::to_string(&body)?);
-        let resp = self
-            .client
+        println!(
+            "associate_merchant body: {:?}",
+            serde_json::to_string(&body)?
+        );
+        self.client
             .post(self.get_url("m2mpurchases_merchants"))
             .header("xc-auth", self.api_token)
             .json(&body)
             .send()
             .await?;
         // TODO: handle status 400
-        println!("associate_merchant resp: {:?}", resp);
+        // println!("associate_merchant resp: {:?}", resp);
         Ok(())
     }
 }

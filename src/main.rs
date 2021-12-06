@@ -58,29 +58,45 @@ async fn main() -> Result<(), Error> {
         .await
         .expect("failed to retrieve purchases");
 
-    for rec in &mut purchases.into_iter() {
-        let fields = &rec.fields;
-        let tags = fields.tags.as_ref().unwrap();
-        let merchant = fields.merchant.as_ref().unwrap();
-
+    for rec in purchases.into_iter() {
+        println!("rec: {:?}", rec);
         let purchase = nocodb::purchases::Purchase {
             id: None,
-            amount: fields.amount,
-            date: fields.datestr.clone(),
+            amount: rec.fields.amount,
+            date: rec.fields.datestr,
         };
         let resp = db.add_purchase(purchase).await?;
+        println!("purchase_id: {:?}", resp.id);
 
         if let Some(purchase_id) = resp.id {
+            // https://docs.nocodb.com/setup-and-usages/link-to-another-record#relationship-types
+            // For every many to many relation defined between tables, NocoDB augments many to many
+            // relationship column in the other table automatically.
+            let merchant = rec.fields.merchant.unwrap();
             let merchant_name = table.get_merchant(&merchant[0]).await?.fields.name.unwrap();
             let merchant_id = db.get_merchant(&merchant_name).await?.id.unwrap();
+            println!(
+                "associating merchant: purchase: {:?}, merchant: {:?}",
+                purchase_id, merchant_id
+            );
             if let Err(e) = db.associate_merchant(purchase_id, merchant_id).await {
                 eprintln!("associate_merchant error: {:?}", e);
                 exit(1);
             }
 
-            for tag in &mut tags.iter() {
+            let tags = rec.fields.tags.unwrap();
+            println!("tags: purchase: {:?}, tags: {:?}", purchase_id, tags);
+            for tag in tags.iter() {
                 let tag_name = table.get_tag(tag).await?.fields.name.unwrap();
+                println!(
+                    "tag name: purchase: {:?}, name: {:?}",
+                    purchase_id, tag_name
+                );
                 let tag_id = db.get_tag(&tag_name).await?.id.unwrap();
+                println!(
+                    "associating tag: purchase: {:?}, tag: {:?}",
+                    purchase_id, tag_id
+                );
                 if let Err(e) = db.associate_tag(purchase_id, tag_id).await {
                     eprintln!("associate_tag error: {:?}", e);
                     exit(1);
