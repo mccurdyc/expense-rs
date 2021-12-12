@@ -30,7 +30,7 @@ async fn main() -> Result<(), Error> {
     for rec in &mut recs {
         let tag = nocodb::tags::Tag {
             id: None,
-            name: Some(rec.fields.name.unwrap()),
+            name: Some(rec.fields.name.expect("tag record is missing name")),
         };
         db.add_tag(tag).await?;
     }
@@ -48,7 +48,7 @@ async fn main() -> Result<(), Error> {
     for rec in &mut recs {
         let merchant = nocodb::merchants::Merchant {
             id: None,
-            name: rec.fields.name.unwrap(),
+            name: rec.fields.name.expect("merchant record is missing name"),
         };
         db.add_merchant(merchant).await?;
     }
@@ -72,9 +72,18 @@ async fn main() -> Result<(), Error> {
             // https://docs.nocodb.com/setup-and-usages/link-to-another-record#relationship-types
             // For every many to many relation defined between tables, NocoDB augments many to many
             // relationship column in the other table automatically.
-            let merchant = rec.fields.merchant.unwrap();
-            let merchant_name = table.get_merchant(&merchant[0]).await?.fields.name.unwrap();
-            let merchant_id = db.get_merchant(&merchant_name).await?.id.unwrap();
+            let merchant = rec.fields.merchant.expect("purchase is missing merchant");
+            let merchant_name = table
+                .get_merchant(&merchant[0])
+                .await?
+                .fields
+                .name
+                .expect("merchant is missing name");
+            let merchant_id = db
+                .get_merchant(&merchant_name)
+                .await?
+                .id
+                .expect("merchant is missing id");
             println!(
                 "associating merchant: purchase: {:?}, merchant: {:?}",
                 purchase_id, merchant_id
@@ -84,15 +93,20 @@ async fn main() -> Result<(), Error> {
                 exit(1);
             }
 
-            let tags = rec.fields.tags.unwrap();
+            let tags = rec.fields.tags.expect("purchase is missing tags");
             println!("tags: purchase: {:?}, tags: {:?}", purchase_id, tags);
             for tag in tags.iter() {
-                let tag_name = table.get_tag(tag).await?.fields.name.unwrap();
+                let tag_name = table
+                    .get_tag(tag)
+                    .await?
+                    .fields
+                    .name
+                    .expect("tag is missing name");
                 println!(
                     "tag name: purchase: {:?}, name: {:?}",
                     purchase_id, tag_name
                 );
-                let tag_id = db.get_tag(&tag_name).await?.id.unwrap();
+                let tag_id = db.get_tag(&tag_name).await?.id.expect("tag is missing id");
                 println!(
                     "associating tag: purchase: {:?}, tag: {:?}",
                     purchase_id, tag_id
